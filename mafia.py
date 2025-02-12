@@ -1,12 +1,46 @@
 from collections import Counter
 import random
+from owlready2 import *
+
+onto = get_ontology("http://test.org/onto.owl")
+
+with onto:
+    class Mafia_Game_Knowledge(Thing): #Overarching central node in KG to act as anchor point
+        pass
+    
+    class Player(Thing):
+        pass
+
+    class is_playing_in(ObjectProperty):
+        domain = [Player]
+        range = [Mafia_Game_Knowledge]
+
+    class has_player(ObjectProperty):
+        domain           = [Mafia_Game_Knowledge]
+        range            = [Player]
+        inverse_property = is_playing_in
+
+    class alive(DataProperty, FunctionalProperty): # Each player is alive or dead
+        domain    = [Player]
+        range     = [bool]
+
+    class role(DataProperty, FunctionalProperty):
+        domain = [Player]
+        range = [str]
 
 class Mafia_Player:
-    def __init__(self, name, role, alive, KG):
+    def __init__(self, name, role, alive):
         self.name = name
         self.role = role
         self.alive = alive
-        self.KG = KG
+        self.KG = Mafia_Game_Knowledge("my_game"+name)
+
+    def enter_game(self, game):
+        self.game = game
+
+    def init_KG(self):
+        for player in self.game.get_players():
+            self.KG.has_player.append(Player("player_"+name))
 
     def cast_vote(self, game):
         players = game.get_players()
@@ -27,6 +61,11 @@ class Mafia_Player:
     
     def set_alive(self, new_status):
         self.alive = new_status
+    
+    def print_all_props(self):
+        for prop in self.KG.get_properties():
+            for value in prop[self.KG]:
+                print(".%s == %s" % (prop.python_name, value))
 
 class Mafia_Game:
     def __init__(self, name, player_list):
