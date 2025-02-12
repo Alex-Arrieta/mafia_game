@@ -33,15 +33,10 @@ class Mafia_Player:
         self.name = name
         self.role = role
         self.alive = alive
-        self.KG = Mafia_Game_Knowledge("my_game"+name)
+        self.KG = None
 
-    def enter_game(self, game):
-        self.game = game
-
-    def init_KG(self):
-        for player in self.game.get_players():
-            self.KG.has_player.append(Player("player_"+name))
-
+    def set_KG(self, KG):
+        self.KG = KG
     def cast_vote(self, game):
         players = game.get_players()
         vote = 1
@@ -56,6 +51,9 @@ class Mafia_Player:
     def get_role(self):
         return self.role
     
+    def get_name(self):
+        return self.name
+    
     def get_alive(self):
         return self.alive
     
@@ -68,9 +66,18 @@ class Mafia_Player:
                 print(".%s == %s" % (prop.python_name, value))
 
 class Mafia_Game:
-    def __init__(self, name, player_list):
+    def __init__(self, name, player_count):
         self.name = name
-        self.player_list = player_list
+        self.player_list = []
+        #Initalize all the players
+        for i in range(player_count):
+            self.player_list.append(Mafia_Player("Player_"+str(i)), "TownsPerson", True)
+
+        #Now for each player we initialize a KG
+        for player in self.player_list:
+            currKG = Mafia_Game_Knowledge("my_game_"+player.get_name())
+            for player in self.player_list():
+                currKG.has_player.append(Player("player_"+self.name))
 
     def get_players(self):
         return self.player_list
