@@ -74,10 +74,16 @@ class Mafia_Game:
             self.player_list.append(Mafia_Player("Player_"+str(i)), "TownsPerson", True)
 
         #Now for each player we initialize a KG
-        for player in self.player_list:
-            currKG = Mafia_Game_Knowledge("my_game_"+player.get_name())
-            for player in self.player_list():
-                currKG.has_player.append(Player("player_"+self.name))
+        for player_i in self.player_list:
+            currKG = Mafia_Game_Knowledge("my_game_"+player_i.get_name())
+            for player_j in self.player_list():
+                other_player = Player("player_"+player_j.get_name())
+                currKG.has_player.append(other_player)
+                other_player.alive = True
+                other_player.role = "Unknown"
+                if player_i == player_j:
+                    other_player.role = player_i.get_role()
+
 
     def get_players(self):
         return self.player_list
