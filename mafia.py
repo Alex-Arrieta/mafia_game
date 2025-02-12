@@ -37,6 +37,7 @@ class Mafia_Player:
 
     def set_KG(self, KG):
         self.KG = KG
+
     def cast_vote(self, game):
         players = game.get_players()
         vote = 1
@@ -59,6 +60,9 @@ class Mafia_Player:
     
     def set_alive(self, new_status):
         self.alive = new_status
+
+    def get_KG(self):
+        return self.KG
     
     def print_all_props(self):
         for prop in self.KG.get_properties():
@@ -71,18 +75,19 @@ class Mafia_Game:
         self.player_list = []
         #Initalize all the players
         for i in range(player_count):
-            self.player_list.append(Mafia_Player("Player_"+str(i)), "TownsPerson", True)
+            self.player_list.append(Mafia_Player("Player_"+str(i), "TownsPerson", True))
 
         #Now for each player we initialize a KG
         for player_i in self.player_list:
             currKG = Mafia_Game_Knowledge("my_game_"+player_i.get_name())
-            for player_j in self.player_list():
+            for player_j in self.player_list:
                 other_player = Player("player_"+player_j.get_name())
                 currKG.has_player.append(other_player)
                 other_player.alive = True
                 other_player.role = "Unknown"
                 if player_i == player_j:
                     other_player.role = player_i.get_role()
+            player_i.set_KG(currKG)
 
 
     def get_players(self):
@@ -145,9 +150,12 @@ p5 = Mafia_Player("p5", "Mafia", True)
 p6 = Mafia_Player("p6", "Mafia", True)
 p7 = Mafia_Player("p7", "Mafia", True)
 p8 = Mafia_Player("p8", "Mafia", True)
-Mafia_Game("test_game", [p1, p2, p3, p4, p5, p6, p7, p8])
-votes = []
-votes.append(3)
-votes.append(5)
-votes.append(3)
-print(votes)
+game = Mafia_Game("test_game", 8)
+player = game.get_players()[0]
+KG = player.get_KG()
+for prop in KG.get_properties():
+    for value in prop[KG]:
+        print(".%s == %s" % (prop.python_name, value))
+        for prop2 in value.get_properties():
+            for value2 in prop2[value]:
+                print(".%s == %s" % (prop2.python_name, value2))
