@@ -4,8 +4,7 @@ class KnowledgeGraph:
     for an AI player. It stores facts about players and the game state.
     """
     def __init__(self):
-        # We simply store facts as key-value pairs; a real implementation might use
-        # nodes and edges.
+        # We simply store facts as key-value pairs
         self.facts = {}
 
     def add_fact(self, key, value):
