@@ -123,3 +123,4 @@ Additional Notes
 Branch Etiquette: Always create a new branch for each new feature or bugfix you work on. This keeps the main branch clean and allows you to work on multiple things simultaneously.
 Commit Etiquette: Each commit should represent a single logical change to the project. Avoid committing multiple unrelated changes in a single commit.
 Pull Requests: Provide a clear description in the pull request about the changes you made, why you made them, and how they improve the project.
+KG Visualiztion: Use https://ontopea.com/ with .TTL files to visualize the KG
