@@ -10,10 +10,14 @@ class AIPlayer:
         self.name = name
         self.role = role  # e.g., "mafia", "doctor", "detective", "townsperson"
         self.alive = True
-        self.kg = KnowledgeGraph()
+        self.kg = KnowledgeGraph(name)
         self.llm = LLMInterface(self.name)
-        # Initialize the player’s knowledge with its role.
-        self.kg.add_fact("role", role)
+
+    def get_kg(self):
+        return self.kg
+    
+    def get_name(self):
+        return self.name
 
     def update_game_info(self, info):
         """

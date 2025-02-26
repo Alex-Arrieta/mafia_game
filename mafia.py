@@ -2,7 +2,10 @@ from collections import Counter
 import random
 from owlready2 import *
 
-onto = get_ontology("http://test.org/onto.owl")
+onto = get_ontology("http://test.org/mafia_game.owl") # Make different ontology for each player and one maintained by the game as a ground truth
+#Visualize with https://ontopea.com/
+#Convert to TTL with https://www.easyrdf.org/converter
+
 
 with onto:
     class Mafia_Game_Knowledge(Thing): #Overarching central node in KG to act as anchor point
@@ -159,3 +162,4 @@ for prop in KG.get_properties():
         for prop2 in value.get_properties():
             for value2 in prop2[value]:
                 print(".%s == %s" % (prop2.python_name, value2))
+onto.save("C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/example.rdf")

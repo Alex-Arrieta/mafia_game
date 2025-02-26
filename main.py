@@ -43,7 +43,7 @@ def main():
 
     # Optionally, update each player's knowledge graph with initial game info.
     for player in players:
-        player.update_game_info({"all_players": player_names})
+        player.get_kg().initialize_KG(player_names, role_assignment[player.get_name()])
 
     # Initialize and run the game engine.
     engine = MafiaGameEngine(players)
