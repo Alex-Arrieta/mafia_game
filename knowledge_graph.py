@@ -35,7 +35,14 @@ class KnowledgeGraph:
             class role(DataProperty, FunctionalProperty):
                 domain = [Player]
                 range = [str]
+
+            class potentialRole(ObjectProperty):
+                domain = [Player]
+                range = [str]
         self.onto_instance = Mafia_Game_Knowledge("my_game_"+self.name)
+
+    def get_onto(self):
+        return self.onto
         
     def initialize_KG(self, players, role):
         for player in players:
@@ -45,19 +52,16 @@ class KnowledgeGraph:
             other_player.role = "Unknown"
             if player == self.name:
                 other_player.role = role
+        #self.onto.save(f"C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/Ontology_files/{self.name}.rdf")
                 
+    def update_player_alive(self, player, status):
+        self.onto.search_one(iri = f"*player_{player}").alive = status
 
-    def add_fact(self, key, value):
-        """Add or update a fact."""
-        self.facts[key] = value
+    def add_potential_role(self, player, role):
+        self.onto.search_one(iri = f"*player_{player}").potentialRole.append(role)
 
-    def get_fact(self, key):
-        """Retrieve a fact."""
-        return self.facts.get(key, None)
-
-    def update_fact(self, key, value):
-        """Update a fact."""
-        self.facts[key] = value
+    def remove_potential_role(self, player, role):
+        self.onto.search_one(iri = f"*player_{player}").potentialRole.remove(role)
 
     def __str__(self):
         return str(self.facts)

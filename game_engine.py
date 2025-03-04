@@ -112,6 +112,8 @@ class MafiaGameEngine:
         if name in self.players and self.players[name].alive:
             self.players[name].alive = False
             self.announce(f"{name} has been eliminated.")
+            for player in self.players.items():
+                    player[1].get_kg().update_player_alive(name, False)
 
     def check_game_over(self):
         """Return (game_over: bool, winning_team: str or None)."""
@@ -136,4 +138,5 @@ class MafiaGameEngine:
 
             self.night_phase()
             game_over, winner = self.check_game_over()
+
         self.announce(f"\nGame Over! The {winner} have won!")
