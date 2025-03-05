@@ -36,9 +36,9 @@ class KnowledgeGraph:
                 domain = [Player]
                 range = [str]
 
-            class potentialRole(ObjectProperty):
-                domain = [Player]
+            class potentialRole(DataProperty):
                 range = [str]
+                
         self.onto_instance = Mafia_Game_Knowledge("my_game_"+self.name)
 
     def get_onto(self):
@@ -50,7 +50,9 @@ class KnowledgeGraph:
             self.onto_instance.has_player.append(other_player)
             other_player.alive = True
             other_player.role = "Unknown"
+            other_player.potentialRole.append("mafia")
             if player == self.name:
+                other_player.potentialRole.remove("mafia")
                 other_player.role = role
         #self.onto.save(f"C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/Ontology_files/{self.name}.rdf")
                 
@@ -61,7 +63,16 @@ class KnowledgeGraph:
         self.onto.search_one(iri = f"*player_{player}").potentialRole.append(role)
 
     def remove_potential_role(self, player, role):
-        self.onto.search_one(iri = f"*player_{player}").potentialRole.remove(role)
+        #Check that person already has suspected role
+        if role in self.onto.search_one(iri = f"*player_{player}").potentialRole:
+            self.onto.search_one(iri = f"*player_{player}").potentialRole.remove(role)
 
     def __str__(self):
-        return str(self.facts)
+        to_return = ""
+        for individual in self.onto.individuals():
+            to_return = to_return + str(individual) + ": "
+            for prop in individual.get_properties():
+                for value in prop[individual]:
+                    to_return = to_return + (".%s == %s" % (prop.python_name, value)) + ", "
+            to_return = to_return + "\n"
+        return to_return
