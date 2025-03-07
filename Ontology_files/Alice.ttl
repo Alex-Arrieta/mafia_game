@@ -1,0 +1,79 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ns0: <http://Hank.org/onto.owl#> .
+
+<http://Alice.org/onto.owl> a owl:Ontology .
+<http://Alice.org/onto.owl#is_playing_in>
+  a owl:ObjectProperty ;
+  rdfs:domain <http://Alice.org/onto.owl#Player> ;
+  rdfs:range <http://Alice.org/onto.owl#Mafia_Game_Knowledge> ;
+  owl:inverseOf <http://Alice.org/onto.owl#has_player> .
+
+<http://Alice.org/onto.owl#has_player>
+  a owl:ObjectProperty ;
+  rdfs:domain <http://Alice.org/onto.owl#Mafia_Game_Knowledge> ;
+  rdfs:range <http://Alice.org/onto.owl#Player> ;
+  owl:inverseOf <http://Alice.org/onto.owl#is_playing_in> .
+
+<http://Alice.org/onto.owl#alive>
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:domain <http://Alice.org/onto.owl#Player> ;
+  rdfs:range xsd:boolean .
+
+<http://Alice.org/onto.owl#role>
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:domain <http://Alice.org/onto.owl#Player> ;
+  rdfs:range xsd:string .
+
+<http://Alice.org/onto.owl#Mafia_Game_Knowledge>
+  a owl:Class ;
+  rdfs:subClassOf owl:Thing .
+
+<http://Alice.org/onto.owl#Player>
+  a owl:Class ;
+  rdfs:subClassOf owl:Thing .
+
+<http://Alice.org/onto.owl#my_game_Alice>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Mafia_Game_Knowledge> ;
+  ns0:has_player <http://Alice.org/onto.owl#player_Alice>, <http://Alice.org/onto.owl#player_Bob>, <http://Alice.org/onto.owl#player_Charlie>, <http://Alice.org/onto.owl#player_Dana>, <http://Alice.org/onto.owl#player_Eve>, <http://Alice.org/onto.owl#player_Frank>, <http://Alice.org/onto.owl#player_Grace>, <http://Alice.org/onto.owl#player_Hank> .
+
+<http://Alice.org/onto.owl#player_Alice>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "mafia"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Bob>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Charlie>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Dana>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Eve>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Frank>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Grace>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .
+
+<http://Alice.org/onto.owl#player_Hank>
+  a owl:NamedIndividual, <http://Alice.org/onto.owl#Player> ;
+  ns0:alive true ;
+  ns0:role "Unknown"^^xsd:string .

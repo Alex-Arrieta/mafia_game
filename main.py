@@ -43,11 +43,13 @@ def main():
 
     # Optionally, update each player's knowledge graph with initial game info.
     for player in players:
-        player.update_game_info({"all_players": player_names})
+        player.get_kg().initialize_KG(player_names, role_assignment[player.get_name()])
 
     # Initialize and run the game engine.
     engine = MafiaGameEngine(players)
     engine.run_game()
+    #players[0].get_kg().get_onto().save(f"C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/Ontology_files/{players[0].get_name()}.rdf")
+    print(players[0].get_kg())
 
 if __name__ == "__main__":
     main()
