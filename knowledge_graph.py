@@ -60,7 +60,9 @@ class KnowledgeGraph:
         self.onto.search_one(iri = f"*player_{player}").alive = status
 
     def add_potential_role(self, player, role):
-        self.onto.search_one(iri = f"*player_{player}").potentialRole.append(role)
+        p = self.onto.search_one(iri = f"*player_{player}")
+        p.role = role
+        p.potentialRole = []
 
     def remove_potential_role(self, player, role):
         #Check that person already has suspected role
