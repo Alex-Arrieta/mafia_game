@@ -19,6 +19,9 @@ class AIPlayer:
     def get_name(self):
         return self.name
 
+    def get_role(self):
+        return self.role
+
     def update_game_info(self, info):
         """
         Update the player's knowledge graph with game information.
