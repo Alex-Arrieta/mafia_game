@@ -64,6 +64,7 @@ class MafiaGameEngine:
         mafia_votes = []
         doctor_action = None
         detective_action = None
+        detective_player = None
 
         for name in alive_players:
             player = self.players[name]
@@ -77,6 +78,7 @@ class MafiaGameEngine:
                     doctor_action = action.get("target")
                 elif action["action"] == "check_alignment_detective" and player.role == "detective":
                     detective_action = action.get("target")
+                    detective_player = player
 
         # Process mafia votes.
         if mafia_votes:
@@ -106,6 +108,7 @@ class MafiaGameEngine:
             if target_player:
                 alignment = "mafia" if target_player.role == "mafia" else "not mafia"
                 self.announce(f"Detective checked {detective_action} and found that they are {alignment}.")
+                detective_player.get_kg().update_player_role(detective_action, alignment)
             else:
                 self.announce("Detective's target was invalid.")
 

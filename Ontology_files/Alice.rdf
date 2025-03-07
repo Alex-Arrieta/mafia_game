@@ -37,6 +37,10 @@
   <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
 </owl:DatatypeProperty>
 
+<owl:DatatypeProperty rdf:about="#accused">
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+</owl:DatatypeProperty>
+
 <owl:Class rdf:about="#Mafia_Game_Knowledge">
   <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 </owl:Class>
@@ -59,9 +63,8 @@
 
 <owl:NamedIndividual rdf:about="#player_Alice">
   <rdf:type rdf:resource="#Player"/>
-  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</onto:alive>
-  <onto:potentialRole rdf:datatype="http://www.w3.org/2001/XMLSchema#string">mafia</onto:potentialRole>
-  <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">townsperson</onto:role>
+  <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">detective</onto:role>
+  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</onto:alive>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="#player_Bob">
@@ -73,16 +76,16 @@
 
 <owl:NamedIndividual rdf:about="#player_Charlie">
   <rdf:type rdf:resource="#Player"/>
-  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</onto:alive>
   <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Unknown</onto:role>
   <onto:potentialRole rdf:datatype="http://www.w3.org/2001/XMLSchema#string">mafia</onto:potentialRole>
+  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</onto:alive>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="#player_Dana">
   <rdf:type rdf:resource="#Player"/>
+  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</onto:alive>
   <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Unknown</onto:role>
   <onto:potentialRole rdf:datatype="http://www.w3.org/2001/XMLSchema#string">mafia</onto:potentialRole>
-  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</onto:alive>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="#player_Eve">
@@ -101,8 +104,9 @@
 
 <owl:NamedIndividual rdf:about="#player_Grace">
   <rdf:type rdf:resource="#Player"/>
-  <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Unknown</onto:role>
-  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</onto:alive>
+  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</onto:alive>
+  <onto:potentialRole rdf:datatype="http://www.w3.org/2001/XMLSchema#string">mafia</onto:potentialRole>
+  <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">mafia</onto:role>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="#player_Hank">
