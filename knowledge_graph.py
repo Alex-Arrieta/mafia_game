@@ -64,7 +64,7 @@ class KnowledgeGraph:
         p.role = role
         p.potentialRole = []
 
-    def reset_potential_role(self):
+    def reset_potential_role(self, player):
         self.onto.search_one(iri = f"*player_{player}").potentialRole = []
 
     def add_potential_role(self, player, role):

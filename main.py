@@ -50,8 +50,8 @@ def main():
         for player in players:
             player.get_kg().initialize_KG(player_names, player.get_role())
             if (player.get_role() == "mafia"):
-                player.get_kg().reset_potential_role()
                 for other in players:
+                    player.get_kg().reset_potential_role(other.get_name())
                     if (other.get_role() == "mafia"):
                         player.get_kg().update_player_role(other.get_name(), "mafia")
 
