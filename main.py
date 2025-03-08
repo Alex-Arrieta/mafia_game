@@ -29,10 +29,13 @@ def assign_roles(player_names):
 
 def main():
     # List of player names. In our test, these players are all AI.
-    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank", "Ivy"]
     # player_names = ["Alice", "Bob", "Charlie"]
+    player_names = ["Alice", "Bob", "Charlie", "Dana"]
     # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve"]
-    player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank", "Ivy"]
     role_assignment = assign_roles(player_names)
     print("Role assignments:")
     for name, role in role_assignment.items():
@@ -47,13 +50,13 @@ def main():
         if (player.get_role() == "mafia"):
             for other in players:
                 if (other.get_role() == "mafia"):
-                    player.get_kg().update_player_role(other, "mafia")
+                    player.get_kg().update_player_role(other.get_name(), "mafia")
 
 
     # Initialize and run the game engine.
     engine = MafiaGameEngine(players)
     engine.run_game()
-    players[0].get_kg().get_onto().save(f"C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/Ontology_files/{players[0].get_name()}.rdf")
+    players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
     print(players[0].get_kg())
 
 if __name__ == "__main__":

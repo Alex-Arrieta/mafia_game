@@ -1,3 +1,4 @@
+# game_engine.py
 import random
 from collections import Counter
 
@@ -29,26 +30,44 @@ class MafiaGameEngine:
         self.announce(f"\n--- Day {self.day_count} ---")
         alive_players = self.get_alive_players()
 
-        # Gather day actions from each alive player.
-        day_actions = {}
+        # --- Phase 1: Collect messages from each player ---
+        day_messages = {}
         for name in alive_players:
             player = self.players[name]
-            # Build context for the player.
-            context = {"alive_players": alive_players}
-            action = player.act("day", context)
-            day_actions[name] = action
+            # Build context for message generation. We include a serialized KG.
+            context = {
+                "alive_players": alive_players,
+                "player_name": name,
+                "role": player.get_role(),
+                "kg": player.get_kg().__str__()  # Alternatively, use a dedicated serialize() method.
+            }
+            action = player.act_day_message(context)
+            if action.get("action") == "post_message":
+                message = action.get("message", "")
+                day_messages[name] = message
+                self.announce(message)
+            else:
+                day_messages[name] = "no_message"
 
-            # Process any messages.
-            if action["action"] == "post_message":
-                self.announce(action.get("message", ""))
-        
-        # Tally votes (if any).
-        votes = [action.get("target") for action in day_actions.values() if action["action"] == "vote" and action.get("target")]
-        if votes:
-            vote_count = Counter(votes)
-            most_common = vote_count.most_common(1)[0]
-            target, count = most_common
-            # For this simple example, we require a plurality vote.
+        # --- Phase 2: Collect votes based on messages ---
+        votes = {}
+        for name in alive_players:
+            player = self.players[name]
+            context = {
+                "alive_players": alive_players,
+                "player_name": name,
+                "role": player.get_role(),
+                "kg": player.get_kg().__str__(),
+                "messages": day_messages
+            }
+            action = player.act_day_vote(context)
+            votes[name] = action.get("target", "no_vote")
+
+        # Tally votes.
+        vote_list = [target for target in votes.values() if target != "no_vote" and target]
+        if vote_list:
+            vote_count = Counter(vote_list)
+            target, count = vote_count.most_common(1)[0]
             self.announce(f"Players voted to eliminate {target} (received {count} vote{'s' if count != 1 else ''}).")
             self.eliminate_player(target)
         else:
@@ -68,15 +87,14 @@ class MafiaGameEngine:
 
         for name in alive_players:
             player = self.players[name]
-            context = {"alive_players": alive_players}
-            # Only roles with night actions respond.
+            context = {"alive_players": alive_players, "player_name": name, "role": player.get_role()}
             if player.role in ["mafia", "doctor", "detective"]:
                 action = player.act("night", context)
-                if action["action"] == "mafia_vote" and player.role == "mafia":
+                if action.get("action") == "mafia_vote" and player.role == "mafia":
                     mafia_votes.append(action.get("target"))
-                elif action["action"] == "doctor_save" and player.role == "doctor":
+                elif action.get("action") == "doctor_save" and player.role == "doctor":
                     doctor_action = action.get("target")
-                elif action["action"] == "check_alignment_detective" and player.role == "detective":
+                elif action.get("action") == "check_alignment_detective" and player.role == "detective":
                     detective_action = action.get("target")
                     detective_player = player
 
@@ -89,9 +107,9 @@ class MafiaGameEngine:
             # Choose the target with the most votes.
             target = max(vote_count, key=vote_count.get)
             self.announce(f"Mafia targeted {target}.")
-            for player in self.players.items():
-                    player[1].get_kg().remove_potential_role(name, "mafia")
-            # Process doctor save.
+            # Remove mafia potential role from all players (example update)
+            for player in self.players.values():
+                player.get_kg().remove_potential_role(player.get_name(), "mafia")
             if doctor_action == target:
                 self.announce(f"Doctor saved {target} during the night!")
             else:
@@ -117,8 +135,8 @@ class MafiaGameEngine:
         if name in self.players and self.players[name].alive:
             self.players[name].alive = False
             self.announce(f"{name} has been eliminated.")
-            for player in self.players.items():
-                    player[1].get_kg().update_player_alive(name, False)
+            for player in self.players.values():
+                player.get_kg().update_player_alive(name, False)
 
     def check_game_over(self):
         """Return (game_over: bool, winning_team: str or None)."""
