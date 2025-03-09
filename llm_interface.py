@@ -1,71 +1,150 @@
-import random
+import os
+import json
+import time
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env
+
+id_map = {
+    0: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    1: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    2: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    3: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    4: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    5: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    6: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    7: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+}
 
 class LLMInterface:
     """
-    A stub for the LLM interface. In an actual implementation, this class
-    would call out to a large language model API using the current narrative
-    and knowledge graph information. Here, we simulate a response by choosing
-    a valid action at random.
+    An interface to the LLM assistant that uses a persistent thread per player.
     """
-    def __init__(self, player_name):
+    def __init__(self, player_name, player_id):
         self.player_name = player_name
+        # Initialize the client with the organization and project IDs.
+        self.client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"), 
+            organization='org-SmlbKQVG4YpQ3ZyWss1uG0Iu',
+            project='proj_Qeh1WBMfbeqqktKMn24e2quf',
+        )
+        # Retrieve the assistant instance
+        self.assistant_id = id_map[player_id]
+        self.assistant = self.client.beta.assistants.retrieve(self.assistant_id)
+        # Create a new thread for this player (the thread will keep the chat history)
+        thread_response = self.client.beta.threads.create(
+            messages=[
+                {
+                    "role": "assistant",
+                    "content": f"Initializing thread for player {self.player_name}."
+                }
+            ]
+        )
+        # Save the thread id
+        self.thread_id = thread_response.id
+        # self._send_run()
+
+    def _send_message(self, role, content):
+        """
+        Sends a message to the persistent thread and returns the created message.
+        """
+        msg = self.client.beta.threads.messages.create(
+            self.thread_id,
+            role=role,
+            content=content,
+        )
+        self._send_run()
+
+    def _get_latest_assistant_message(self):
+        """
+        Retrieve the list of messages and return the most recent assistant message.
+        """
+        thread_messages = self.client.beta.threads.messages.list(self.thread_id)
+        # Assume that the assistant’s reply is the last message with role "assistant"
+        # last_message_id = len(thread_messages.data) - 1
+        if thread_messages.data[0].role == "assistant":
+            message = thread_messages.data[0].content[0].text.value
+            return message
+        return None
+    
+    def _send_run(self):
+
+        run = self.client.beta.threads.runs.create(
+            assistant_id=self.assistant_id,
+            thread_id=self.thread_id,
+        )
+        while run.status == "queued" or run.status == "in_progress":
+            run = self.client.beta.threads.runs.retrieve(
+                thread_id=self.thread_id,
+                run_id=run.id,
+            )
+            time.sleep(0.1)
+        return run
 
     def generate_action(self, phase, context):
         """
-        Generate an action based on the phase and context.
-        'context' is a dict containing the narrative and current game state.
-        The output is a dict representing the desired action.
+        Build a prompt based on phase and context, send it to the assistant thread,
+        and return the parsed action as a dictionary.
         """
-        # For simplicity, we choose an action based on phase.
-        if phase == "day":
-            # For the day, a player may vote or post a message.
-            action_choice = random.choice(["vote", "no_vote", "post_message", "no_message"])
-            if action_choice == "vote":
-                # choose a target at random from alive players other than self:
-                alive = context.get("alive_players", [])
-                # Remove self from candidate targets.
-                candidates = [p for p in alive if p != self.player_name]
-                if candidates:
-                    target = random.choice(candidates)
-                else:
-                    target = None
-                return {"action": "vote", "target": target}
-            elif action_choice == "post_message":
-                message = f"{self.player_name} says: I suspect someone!"
-                return {"action": "post_message", "message": message}
-            elif action_choice == "no_vote":
-                return {"action": "no_vote"}
-            else:  # "no_message"
-                return {"action": "no_message"}
-
+        # Build the prompt according to phase.
+        if phase == "day_message":
+            prompt = (
+                f"Player {self.player_name} ({context.get('role')}) update:\n"
+                f"Knowledge Graph:\n{context.get('kg')}\n"
+                f"Game context:\n{json.dumps(context, indent=2)}\n"
+                "Generate a JSON object with an 'action' key. For example, \n"
+                "if posting a message, return {\"action\": \"post_message\", \"message\": \"...\"}. "
+                "If nothing to say, return {\"action\": \"no_message\"}.\n"
+                "Remember, this message will be visible to all players. It may be in your interset to post_message, or no_message."
+                "It's not always a good idea to tell the group who your suspects are until you have whittled down the list."
+                "It's not always a good idea to tell the group your role until it reveals information that is beneficial to the group."
+                "It is usually a good idea to post_message, but not always."
+            )
+        elif phase == "day_vote":
+            prompt = (
+                f"Player {self.player_name} ({context.get('role')}) update:\n"
+                f"Knowledge Graph:\n{context.get('kg')}\n"
+                f"Messages from players:\n{json.dumps(context.get('messages', {}), indent=2)}\n"
+                f"Game context:\n{json.dumps(context, indent=2)}\n"
+                "Generate a JSON object with a 'target' key indicating the name of the player to vote out, "
+                "or return {\"target\": \"no_vote\"} if not voting."
+            )
         elif phase == "night":
-            role = context.get("role", "townsperson")
+            # Customize the prompt for night actions based on role.
+            role = context.get("role")
+            alive = json.dumps(context.get("alive_players"))
             if role == "mafia":
-                # Mafia vote for a target to kill.
-                alive = context.get("alive_players", [])
-                candidates = [p for p in alive if p != self.player_name]
-                if candidates:
-                    target = random.choice(candidates)
-                else:
-                    target = None
-                return {"action": "mafia_vote", "target": target}
+                prompt = (
+                    f"Player {self.player_name} (Mafia) update:\n"
+                    f"Alive players: {alive}\n"
+                    "Choose a target to kill. Return a JSON object like {\"action\": \"mafia_vote\", \"target\": \"PlayerName\"}."
+                )
             elif role == "doctor":
-                # Doctor saves a target.
-                alive = context.get("alive_players", [])
-                target = random.choice(alive) if alive else None
-                return {"action": "doctor_save", "target": target}
+                prompt = (
+                    f"Player {self.player_name} (Doctor) update:\n"
+                    f"Alive players: {alive}\n"
+                    "Choose a player to save. Return a JSON object like {\"action\": \"doctor_save\", \"target\": \"PlayerName\"}."
+                )
             elif role == "detective":
-                # Detective checks someone.
-                alive = context.get("alive_players", [])
-                candidates = [p for p in alive if p != self.player_name]
-                if candidates:
-                    target = random.choice(candidates)
-                else:
-                    target = None
-                return {"action": "check_alignment_detective", "target": target}
+                prompt = (
+                    f"Player {self.player_name} (Detective) update:\n"
+                    f"Alive players: {alive}\n"
+                    "Choose a player to investigate. Return a JSON object like {\"action\": \"check_alignment_detective\", \"target\": \"PlayerName\"}."
+                )
             else:
-                # Townsperson have no night action.
-                return {"action": "no_action"}
+                prompt = "No night action required."
         else:
-            # Unknown phase
-            return {"action": "no_action"}
+            prompt = "Invalid phase."
+
+        # Send the prompt as a user message.
+        self._send_message(role="user", content=prompt)
+        # (Assuming the assistant responds synchronously.)
+        # Retrieve the latest assistant message.
+        assistant_response = self._get_latest_assistant_message()
+        # Try to parse the response as JSON.
+        try:
+            action = json.loads(assistant_response)
+        except (json.JSONDecodeError, TypeError):
+            action = {"action": "error", "message": assistant_response}
+        return action

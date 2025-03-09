@@ -1,3 +1,4 @@
+# game_engine.py
 import random
 from collections import Counter
 
@@ -19,49 +20,66 @@ class MafiaGameEngine:
         """Return a list of names of alive players."""
         return [name for name, player in self.players.items() if player.alive]
 
-    def announce(self, message, time):
+    def announce(self, message):
         """Add a message to the narrative and print it."""
-        if time == "day":
-            self.narrative.write(message + "\n")
+        # if time == "day":
+        #     self.narrative.write(message + "\n")
         self.full_narrative.write(message + "\n")
         print(message)
 
     def day_phase(self):
         """Conduct the day phase: players may vote and post messages."""
         self.day_count += 1
-        self.announce(f"\n--- Day {self.day_count} ---", "day")
+        self.announce(f"\n--- Day {self.day_count} ---")
         alive_players = self.get_alive_players()
 
-        # Gather day actions from each alive player.
-        day_actions = {}
+        # --- Phase 1: Collect messages from each player ---
+        day_messages = {}
         for name in alive_players:
             player = self.players[name]
-            # Build context for the player.
-            context = {"alive_players": alive_players}
-            action = player.act("day", context)
-            day_actions[name] = action
+            # Build context for message generation. We include a serialized KG.
+            context = {
+                "alive_players": alive_players,
+                "player_name": name,
+                "role": player.get_role(),
+                "kg": player.get_kg().__str__()  # Alternatively, use a dedicated serialize() method.
+            }
+            action = player.act_day_message(context)
+            if action.get("action") == "post_message":
+                message = action.get("message", "")
+                day_messages[name] = message
+                self.announce(f"{player}: {message}")
+            else:
+                day_messages[name] = "no_message"
 
-            # Process any messages.
-            if action["action"] == "post_message":
-                self.announce(action.get("message", ""), "day")
+        # --- Phase 2: Collect votes based on messages ---
+        votes = {}
+        for name in alive_players:
+            player = self.players[name]
+            context = {
+                "alive_players": alive_players,
+                "player_name": name,
+                "role": player.get_role(),
+                "kg": player.get_kg().__str__(),
+                "messages": day_messages
+            }
+            action = player.act_day_vote(context)
+            votes[name] = action.get("target", "no_vote")
 
-        
-        # Tally votes (if any).
-        votes = [action.get("target") for action in day_actions.values() if action["action"] == "vote" and action.get("target")]
-        if votes:
-            vote_count = Counter(votes)
-            most_common = vote_count.most_common(1)[0]
-            target, count = most_common
-            # For this simple example, we require a plurality vote.
-            self.announce(f"Players voted to eliminate {target} (received {count} vote{'s' if count != 1 else ''}).", "day")
+        # Tally votes.
+        vote_list = [target for target in votes.values() if target != "no_vote" and target]
+        if vote_list:
+            vote_count = Counter(vote_list)
+            target, count = vote_count.most_common(1)[0]
+            self.announce(f"Players voted to eliminate {target} (received {count} vote{'s' if count != 1 else ''}).")
             self.eliminate_player(target)
         else:
-            self.announce("No votes were cast. No one is eliminated today.", "day")
+            self.announce("No votes were cast. No one is eliminated today.")
 
     def night_phase(self):
         """Conduct the night phase: special roles take actions."""
         self.night_count += 1
-        self.announce(f"\n--- Night {self.night_count} ---", "night")
+        self.announce(f"\n--- Night {self.night_count} ---")
         alive_players = self.get_alive_players()
 
         # Collect actions by role.
@@ -72,15 +90,14 @@ class MafiaGameEngine:
 
         for name in alive_players:
             player = self.players[name]
-            context = {"alive_players": alive_players}
-            # Only roles with night actions respond.
+            context = {"alive_players": alive_players, "player_name": name, "role": player.get_role()}
             if player.role in ["mafia", "doctor", "detective"]:
-                action = player.act("night", context)
-                if action["action"] == "mafia_vote" and player.role == "mafia":
+                action = player.act_night(context)
+                if action.get("action") == "mafia_vote" and player.role == "mafia":
                     mafia_votes.append(action.get("target"))
-                elif action["action"] == "doctor_save" and player.role == "doctor":
+                elif action.get("action") == "doctor_save" and player.role == "doctor":
                     doctor_action = action.get("target")
-                elif action["action"] == "check_alignment_detective" and player.role == "detective":
+                elif action.get("action") == "check_alignment_detective" and player.role == "detective":
                     detective_action = action.get("target")
                     detective_player = player
 
@@ -92,18 +109,18 @@ class MafiaGameEngine:
                     vote_count[target] = vote_count.get(target, 0) + 1
             # Choose the target with the most votes.
             target = max(vote_count, key=vote_count.get)
-            self.announce(f"Mafia targeted {target}.", "night")
-            for player in self.players.items():
-                    player[1].get_kg().remove_potential_role(name, "mafia")
-            # Process doctor save.
+            self.announce(f"Mafia targeted {target}.")
+            # Remove mafia potential role from all players
+            for player in self.players.values():
+                player.get_kg().remove_potential_role(target, "mafia")
             if doctor_action == target:
-                self.announce(f"Doctor saved {target} during the night!", "night")
+                self.announce(f"Doctor saved {target} during the night!")
             else:
-                self.announce(f"{target} was killed during the night!", "night")
+                self.announce(f"{target} was killed during the night!")
                 self.eliminate_player(target)
                 
         else:
-            self.announce("No mafia actions were taken tonight.", "night")
+            self.announce("No mafia actions were taken tonight.")
 
         # Process detective action.
         if detective_action:
@@ -111,18 +128,18 @@ class MafiaGameEngine:
             target_player = self.players.get(detective_action)
             if target_player:
                 alignment = "mafia" if target_player.role == "mafia" else "not mafia"
-                self.announce(f"Detective checked {detective_action} and found that they are {alignment}.", "night")
+                self.announce(f"Detective checked {detective_action} and found that they are {alignment}.")
                 detective_player.get_kg().update_player_role(detective_action, alignment)
             else:
-                self.announce("Detective's target was invalid.", "night")
+                self.announce("Detective's target was invalid.")
 
     def eliminate_player(self, name):
         """Eliminate (kill) the player by name."""
         if name in self.players and self.players[name].alive:
             self.players[name].alive = False
-            self.announce(f"{name} has been eliminated.", "night")
-            for player in self.players.items():
-                    player[1].get_kg().update_player_alive(name, False)
+            self.announce(f"{name} has been eliminated.")
+            for player in self.players.values():
+                player.get_kg().update_player_alive(name, False)
 
     def check_game_over(self):
         """Return (game_over: bool, winning_team: str or None)."""
@@ -148,5 +165,4 @@ class MafiaGameEngine:
             self.night_phase()
             game_over, winner = self.check_game_over()
 
-        self.announce(f"\nGame Over! The {winner} have won!", "night")
-        return winner
+        self.announce(f"\nGame Over! The {winner} have won!")

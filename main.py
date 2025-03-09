@@ -29,17 +29,20 @@ def assign_roles(player_names):
 
 def main():
     # List of player names. In our test, these players are all AI.
-    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank", "Ivy"]
     # player_names = ["Alice", "Bob", "Charlie"]
-    # player_names = ["Alice", "Bob", "Charlie", "Dana"]
-    player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank"]
+    player_names = ["Alice", "Bob", "Charlie", "Dana"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank", "Ivy"]
     role_assignment = assign_roles(player_names)
     print("Role assignments:")
     for name, role in role_assignment.items():
         print(f"  {name}: {role}")
 
     # Create AI players.
-    players = [AIPlayer(name, role_assignment[name]) for name in player_names]
+    players = [AIPlayer(name, role_assignment[name], id) for id, name in enumerate(player_names)]
 
     # Optionally, update each player's knowledge graph with initial game info.
     for player in players:
@@ -55,7 +58,7 @@ def main():
     engine = MafiaGameEngine(players)
     engine.run_game()
     # players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
-    print(players[0].get_kg())
+    # print(players[0].get_kg())
 
 if __name__ == "__main__":
     main()
