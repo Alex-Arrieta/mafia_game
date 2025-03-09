@@ -6,11 +6,22 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env
 
+id_map = {
+    0: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    1: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    2: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    3: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    4: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    5: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    6: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+    7: "asst_U2jta9E4BcrUmu9zFWvXvFG3",
+}
+
 class LLMInterface:
     """
     An interface to the LLM assistant that uses a persistent thread per player.
     """
-    def __init__(self, player_name):
+    def __init__(self, player_name, player_id):
         self.player_name = player_name
         # Initialize the client with the organization and project IDs.
         self.client = OpenAI(
@@ -19,7 +30,7 @@ class LLMInterface:
             project='proj_Qeh1WBMfbeqqktKMn24e2quf',
         )
         # Retrieve the assistant instance
-        self.assistant_id = "asst_U2jta9E4BcrUmu9zFWvXvFG3"
+        self.assistant_id = id_map[player_id]
         self.assistant = self.client.beta.assistants.retrieve(self.assistant_id)
         # Create a new thread for this player (the thread will keep the chat history)
         thread_response = self.client.beta.threads.create(
@@ -85,7 +96,10 @@ class LLMInterface:
                 "Generate a JSON object with an 'action' key. For example, \n"
                 "if posting a message, return {\"action\": \"post_message\", \"message\": \"...\"}. "
                 "If nothing to say, return {\"action\": \"no_message\"}.\n"
-                
+                "Remember, this message will be visible to all players. It may be in your interset to post_message, or no_message."
+                "It's not always a good idea to tell the group who your suspects are until you have whittled down the list."
+                "It's not always a good idea to tell the group your role until it reveals information that is beneficial to the group."
+                "It is usually a good idea to post_message, but not always."
             )
         elif phase == "day_vote":
             prompt = (

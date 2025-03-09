@@ -42,7 +42,7 @@ def main():
         print(f"  {name}: {role}")
 
     # Create AI players.
-    players = [AIPlayer(name, role_assignment[name]) for name in player_names]
+    players = [AIPlayer(name, role_assignment[name], id) for id, name in enumerate(player_names)]
 
     # Optionally, update each player's knowledge graph with initial game info.
     for player in players:
@@ -58,7 +58,7 @@ def main():
     engine = MafiaGameEngine(players)
     engine.run_game()
     # players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
-    print(players[0].get_kg())
+    # print(players[0].get_kg())
 
 if __name__ == "__main__":
     main()

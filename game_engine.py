@@ -20,17 +20,17 @@ class MafiaGameEngine:
         """Return a list of names of alive players."""
         return [name for name, player in self.players.items() if player.alive]
 
-    def announce(self, message, time):
+    def announce(self, message):
         """Add a message to the narrative and print it."""
-        if time == "day":
-            self.narrative.write(message + "\n")
+        # if time == "day":
+        #     self.narrative.write(message + "\n")
         self.full_narrative.write(message + "\n")
         print(message)
 
     def day_phase(self):
         """Conduct the day phase: players may vote and post messages."""
         self.day_count += 1
-        self.announce(f"\n--- Day {self.day_count} ---", "day")
+        self.announce(f"\n--- Day {self.day_count} ---")
         alive_players = self.get_alive_players()
 
         # --- Phase 1: Collect messages from each player ---
@@ -48,7 +48,7 @@ class MafiaGameEngine:
             if action.get("action") == "post_message":
                 message = action.get("message", "")
                 day_messages[name] = message
-                self.announce(message)
+                self.announce(f"{player}: {message}")
             else:
                 day_messages[name] = "no_message"
 
@@ -74,7 +74,7 @@ class MafiaGameEngine:
             self.announce(f"Players voted to eliminate {target} (received {count} vote{'s' if count != 1 else ''}).")
             self.eliminate_player(target)
         else:
-            self.announce("No votes were cast. No one is eliminated today.", "day")
+            self.announce("No votes were cast. No one is eliminated today.")
 
     def night_phase(self):
         """Conduct the night phase: special roles take actions."""
@@ -92,7 +92,7 @@ class MafiaGameEngine:
             player = self.players[name]
             context = {"alive_players": alive_players, "player_name": name, "role": player.get_role()}
             if player.role in ["mafia", "doctor", "detective"]:
-                action = player.act("night", context)
+                action = player.act_night(context)
                 if action.get("action") == "mafia_vote" and player.role == "mafia":
                     mafia_votes.append(action.get("target"))
                 elif action.get("action") == "doctor_save" and player.role == "doctor":
