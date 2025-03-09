@@ -49,6 +49,7 @@ def main():
         player.get_kg().initialize_KG(player_names, player.get_role())
         if (player.get_role() == "mafia"):
             for other in players:
+                player.get_kg().reset_potential_role(other.get_name())
                 if (other.get_role() == "mafia"):
                     player.get_kg().update_player_role(other.get_name(), "mafia")
 
@@ -56,8 +57,14 @@ def main():
     # Initialize and run the game engine.
     engine = MafiaGameEngine(players)
     engine.run_game()
-    players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
+    # players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
     print(players[0].get_kg())
 
 if __name__ == "__main__":
     main()
+
+#79/100 wins for mafia with 8 players
+#78/100 wins for mafia with 7 players
+#95/100 wins for mafia with 6 players
+#65/100 wins for mafia with 5 players
+#66/100 wins for mafia with 4 players

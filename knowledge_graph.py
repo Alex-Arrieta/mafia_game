@@ -38,9 +38,6 @@ class KnowledgeGraph:
 
             class potentialRole(DataProperty):
                 range = [str]
-
-            class accused(DataProperty):
-                range = [str]
                 
         self.onto_instance = Mafia_Game_Knowledge("my_game_"+self.name)
 
@@ -63,12 +60,15 @@ class KnowledgeGraph:
         self.onto.search_one(iri = f"*player_{player}").alive = status
 
     def update_player_role(self, player, role):
-        self.onto.search_one(iri = f"*player_{player}").role = role
-
-    def add_potential_role(self, player, role):
         p = self.onto.search_one(iri = f"*player_{player}")
         p.role = role
         p.potentialRole = []
+
+    def reset_potential_role(self, player):
+        self.onto.search_one(iri = f"*player_{player}").potentialRole = []
+
+    def add_potential_role(self, player, role):
+        self.onto.search_one(iri = f"*player_{player}").potentialRole.append(role)
 
     def remove_potential_role(self, player, role):
         #Check that person already has suspected role

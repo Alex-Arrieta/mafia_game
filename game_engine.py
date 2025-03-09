@@ -13,21 +13,24 @@ class MafiaGameEngine:
         self.players = {player.name: player for player in players}
         self.day_count = 0
         self.night_count = 0
-        self.narrative = []  # A log of narrative events
+        self.narrative = open("narrative.txt", "w") # A log of narrative events
+        self.full_narrative = open("full_narrative.txt", "w")
 
     def get_alive_players(self):
         """Return a list of names of alive players."""
         return [name for name, player in self.players.items() if player.alive]
 
-    def announce(self, message):
+    def announce(self, message, time):
         """Add a message to the narrative and print it."""
-        self.narrative.append(message)
+        if time == "day":
+            self.narrative.write(message + "\n")
+        self.full_narrative.write(message + "\n")
         print(message)
 
     def day_phase(self):
         """Conduct the day phase: players may vote and post messages."""
         self.day_count += 1
-        self.announce(f"\n--- Day {self.day_count} ---")
+        self.announce(f"\n--- Day {self.day_count} ---", "day")
         alive_players = self.get_alive_players()
 
         # --- Phase 1: Collect messages from each player ---
@@ -71,7 +74,7 @@ class MafiaGameEngine:
             self.announce(f"Players voted to eliminate {target} (received {count} vote{'s' if count != 1 else ''}).")
             self.eliminate_player(target)
         else:
-            self.announce("No votes were cast. No one is eliminated today.")
+            self.announce("No votes were cast. No one is eliminated today.", "day")
 
     def night_phase(self):
         """Conduct the night phase: special roles take actions."""
