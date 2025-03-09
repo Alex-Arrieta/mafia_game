@@ -110,9 +110,9 @@ class MafiaGameEngine:
             # Choose the target with the most votes.
             target = max(vote_count, key=vote_count.get)
             self.announce(f"Mafia targeted {target}.")
-            # Remove mafia potential role from all players (example update)
+            # Remove mafia potential role from all players
             for player in self.players.values():
-                player.get_kg().remove_potential_role(player.get_name(), "mafia")
+                player.get_kg().remove_potential_role(target, "mafia")
             if doctor_action == target:
                 self.announce(f"Doctor saved {target} during the night!")
             else:
