@@ -17,3 +17,8 @@ pip-delete-this-directory.txt
 dist/
 build/
 *.egg-info/
+
+Ontology_files/
+*narrative.txt
+.vscode/
+*.vscode/

@@ -28,44 +28,34 @@ def assign_roles(player_names):
     return dict(zip(player_names, roles))
 
 def main():
+    # List of player names. In our test, these players are all AI.
+    # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank", "Ivy"]
+    # player_names = ["Alice", "Bob", "Charlie"]
+    # player_names = ["Alice", "Bob", "Charlie", "Dana"]
+    player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank"]
+    role_assignment = assign_roles(player_names)
+    print("Role assignments:")
+    for name, role in role_assignment.items():
+        print(f"  {name}: {role}")
 
-    mafia_wins = 0
+    # Create AI players.
+    players = [AIPlayer(name, role_assignment[name]) for name in player_names]
 
-    for i in range(0, 100):
-
-        # List of player names. In our test, these players are all AI.
-        # player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank", "Ivy"]
-        # player_names = ["Alice", "Bob", "Charlie"]
-        # player_names = ["Alice", "Bob", "Charlie", "Dana"]
-        player_names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank", "Grace", "Hank"]
-        role_assignment = assign_roles(player_names)
-        print("Role assignments:")
-        for name, role in role_assignment.items():
-            print(f"  {name}: {role}")
-
-        # Create AI players.
-        players = [AIPlayer(name, role_assignment[name]) for name in player_names]
-
-        # Optionally, update each player's knowledge graph with initial game info.
-        for player in players:
-            player.get_kg().initialize_KG(player_names, player.get_role())
-            if (player.get_role() == "mafia"):
-                for other in players:
-                    player.get_kg().reset_potential_role(other.get_name())
-                    if (other.get_role() == "mafia"):
-                        player.get_kg().update_player_role(other.get_name(), "mafia")
+    # Optionally, update each player's knowledge graph with initial game info.
+    for player in players:
+        player.get_kg().initialize_KG(player_names, player.get_role())
+        if (player.get_role() == "mafia"):
+            for other in players:
+                player.get_kg().reset_potential_role(other.get_name())
+                if (other.get_role() == "mafia"):
+                    player.get_kg().update_player_role(other.get_name(), "mafia")
 
 
-        # Initialize and run the game engine.
-        engine = MafiaGameEngine(players)
-        winner = engine.run_game()
-        players[0].get_kg().get_onto().save(f"C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/Ontology_files/{players[0].get_name()}.rdf")
-        print(players[0].get_kg())
-
-        if winner == "Mafia":
-            mafia_wins += 1
-
-    print(mafia_wins)
+    # Initialize and run the game engine.
+    engine = MafiaGameEngine(players)
+    engine.run_game()
+    # players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
+    print(players[0].get_kg())
 
 if __name__ == "__main__":
     main()
