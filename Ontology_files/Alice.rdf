@@ -3,11 +3,11 @@
          xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
          xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
          xmlns:owl="http://www.w3.org/2002/07/owl#"
-         xml:base="http://Alice.org/onto.owl"
-         xmlns="http://Alice.org/onto.owl#"
-         xmlns:onto="http://Dana.org/onto.owl#">
+         xml:base="http://test.org/onto_Alice.owl"
+         xmlns="http://test.org/onto_Alice.owl#"
+         xmlns:onto="http://test.org/onto_Dana.owl#">
 
-<owl:Ontology rdf:about="http://Alice.org/onto.owl"/>
+<owl:Ontology rdf:about="http://test.org/onto_Alice.owl"/>
 
 <owl:ObjectProperty rdf:about="#is_playing_in">
   <rdfs:domain rdf:resource="#Player"/>
@@ -67,13 +67,13 @@
 
 <owl:NamedIndividual rdf:about="#player_Charlie">
   <rdf:type rdf:resource="#Player"/>
-  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</onto:alive>
   <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Unknown</onto:role>
   <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</onto:alive>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="#player_Dana">
   <rdf:type rdf:resource="#Player"/>
+  <onto:alive rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</onto:alive>
   <onto:role rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Unknown</onto:role>
 </owl:NamedIndividual>
 

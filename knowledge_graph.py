@@ -11,7 +11,7 @@ class KnowledgeGraph:
     """
     def __init__(self, name):
         self.name = name
-        self.onto = get_ontology(f"http://{self.name}.org/onto.owl")
+        self.onto = get_ontology(f"http://test.org/onto_{self.name}.owl")
         with self.onto:
             class Mafia_Game_Knowledge(Thing): #Overarching central node in KG to act as anchor point
                 pass
@@ -45,8 +45,10 @@ class KnowledgeGraph:
         return self.onto
         
     def initialize_KG(self, players, role):
+        print(self.onto)
+        print(self.initialize_KG)
         for player in players:
-            other_player = self.onto.Player("player_"+player)
+            other_player = self.onto.Player(f"player_{player}")
             self.onto_instance.has_player.append(other_player)
             other_player.alive = True
             other_player.role = "Unknown"
@@ -57,23 +59,31 @@ class KnowledgeGraph:
         #self.onto.save(f"C:/Users/arrie/OneDrive - Cal Poly/Code/CSC581/mafia_game/Ontology_files/{self.name}.rdf")
                 
     def update_player_alive(self, player, status):
-        self.onto.search_one(iri = f"*player_{player}").alive = status
+        individuals = self.onto.search(iri = f"*player_{player}")
+        to_change = next((s for s in individuals if f"onto_{self.name}" in str(s)), None)
+        to_change.alive = status
 
     def update_player_role(self, player, role):
-        p = self.onto.search_one(iri = f"*player_{player}")
-        p.role = role
-        p.potentialRole = []
+        individuals = self.onto.search(iri = f"*player_{player}")
+        to_change = next((s for s in individuals if f"onto_{self.name}" in str(s)), None)
+        to_change.role = role
+        to_change.potentialRole = []
 
     def reset_potential_role(self, player):
-        self.onto.search_one(iri = f"*player_{player}").potentialRole = []
+        individuals = self.onto.search(iri = f"*player_{player}")
+        to_change = next((s for s in individuals if f"onto_{self.name}" in str(s)), None)
+        to_change.potentialRole = []
 
     def add_potential_role(self, player, role):
-        self.onto.search_one(iri = f"*player_{player}").potentialRole.append(role)
+        individuals = self.onto.search(iri = f"*player_{player}")
+        to_change = next((s for s in individuals if f"onto_{self.name}" in str(s)), None)
+        to_change.potentialRole.append(role)
 
     def remove_potential_role(self, player, role):
-        #Check that person already has suspected role
-        if role in self.onto.search_one(iri = f"*player_{player}").potentialRole:
-            self.onto.search_one(iri = f"*player_{player}").potentialRole.remove(role)
+        individuals = self.onto.search(iri = f"*player_{player}")
+        to_change = next((s for s in individuals if f"onto_{self.name}" in str(s)), None)
+        if role in to_change.potentialRole: #Check that person already has suspected role
+            to_change.potentialRole.remove(role)
 
     def __str__(self):
         to_return = ""
