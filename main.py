@@ -57,7 +57,8 @@ def main():
     # Initialize and run the game engine.
     engine = MafiaGameEngine(players)
     engine.run_game()
-    # players[0].get_kg().get_onto().save(f"./Ontology_files/{players[0].get_name()}.rdf")
+    #for player in players:
+    #    player.get_kg().get_onto().save(f"./Ontology_files/{player.get_name()}.rdf")
     # print(players[0].get_kg())
 
 if __name__ == "__main__":
