@@ -19,7 +19,5 @@ build/
 *.egg-info/
 
 Ontology_files/
-*narrative.txt
+*narrative*.txt
 .vscode/
-*.vscode/
-Ontology_files/Alice.rdf
