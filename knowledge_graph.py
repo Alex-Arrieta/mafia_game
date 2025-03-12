@@ -45,8 +45,6 @@ class KnowledgeGraph:
         return self.onto
         
     def initialize_KG(self, players, role):
-        print(self.onto)
-        print(self.initialize_KG)
         for player in players:
             other_player = self.onto.Player(f"player_{player}")
             self.onto_instance.has_player.append(other_player)
