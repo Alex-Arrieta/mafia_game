@@ -52,6 +52,12 @@ class GameManager:
         self.player_names = player_names
         self.role_assignment = assign_roles(player_names)
         self.players = self._create_players()
+        
+        print("Starting a single game...")
+        print("Role assignments:")
+        for name in self.player_names:
+            role = self.role_assignment[name]
+            print(f"  {name}: {role}")
 
     def _create_players(self):
         """
@@ -121,7 +127,6 @@ class GameManager:
         print(f"\nEvaluation complete. Mafia win rate: {win_rate:.2f}% over {num_games} games.")
         return win_rate
 
-
 def parse_args():
     """
     Parse command-line arguments.
@@ -129,11 +134,16 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Mafia Simulator: Run a single game or evaluate LLM agents over multiple games."
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "--players",
         type=str,
-        default="Alice,Bob,Charlie,Dana",
-        help="Comma-separated list of player names (default: Alice,Bob,Charlie,Dana)"
+        help="Comma-separated list of player names (e.g. Alice,Bob,Charlie,Dana)"
+    )
+    group.add_argument(
+        "--players-file",
+        type=str,
+        help="Path to a file containing player names (one per line, no commas)"
     )
     parser.add_argument(
         "--eval",
@@ -143,10 +153,23 @@ def parse_args():
     )
     return parser.parse_args()
 
-
 def main():
     args = parse_args()
-    player_names = [name.strip() for name in args.players.split(",") if name.strip()]
+
+    # Determine the list of player names.
+    if args.players_file:
+        try:
+            with open(args.players_file, "r") as f:
+                player_names = [line.strip() for line in f if line.strip()]
+        except Exception as e:
+            print(f"Error reading players file: {e}")
+            sys.exit(1)
+    elif args.players:
+        player_names = [name.strip() for name in args.players.split(",") if name.strip()]
+    else:
+        # Default names if neither option is provided.
+        player_names = ["Alice", "Bob", "Charlie", "Dana"]
+
     if len(player_names) < 4:
         print("Error: At least 4 players are required.")
         sys.exit(1)
@@ -156,16 +179,8 @@ def main():
         gm = GameManager(player_names)
         gm.evaluate(args.eval)
     else:
-        print("Starting a single game...")
-        # Display role assignments.
-        role_assignment = assign_roles(player_names)
-        print("Role assignments:")
-        for name, role in role_assignment.items():
-            print(f"  {name}: {role}")
-
         gm = GameManager(player_names)
         gm.run_game()
-
 
 if __name__ == "__main__":
     main()

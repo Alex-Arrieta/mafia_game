@@ -66,9 +66,9 @@ class LLMInterface:
         Retrieve the most recent assistant message from the thread.
         """
         thread_messages = self.client.beta.threads.messages.list(self.thread_id)
-        for msg in reversed(thread_messages.data):
-            if msg.role == "assistant":
-                return msg.content
+        if thread_messages.data[0].role == "assistant":
+            message = thread_messages.data[0].content[0].text.value
+            return message
         return None
 
     def _send_run(self):
@@ -101,7 +101,29 @@ class LLMInterface:
                 "return {\"action\": \"post_message\", \"message\": \"...\"}. "
                 "If nothing to say, return {\"action\": \"no_message\"}.\n"
                 "Remember to include the word 'json' in your response so that the response_format is valid."
+                # "Remember, this message will be visible to all players. It may be in your interset to post_message, or no_message."
+                # "It's not always a good idea to tell the group who your suspects are until you have whittled down the list."
+                # "It's not always a good idea to tell the group your role until it reveals information that is beneficial to the group."
+                # "It is usually a good idea to post_message, but not always."
             )
+            if context.get("role") == "mafia":
+                prompt += (
+                    "You are a mafia member. Be careful not to reveal your identity."
+                    "Your goal is to deceive the other players and get them to trust that you are a townsperson, doctor, or detective."
+                )
+            elif context.get("role") == "doctor":
+                prompt += (
+                    "You are the doctor. Your goal is to protect the townspersons and yourself."
+                )
+            elif context.get("role") == "detective":
+                prompt += (
+                    "You are the detective. Your goal is to identify the mafia members."
+                )
+            else:
+                prompt += (
+                    "You are a townsperson. Your goal is to identify the mafia members."
+                )
+                
         elif phase == "day_vote":
             prompt = (
                 f"Player {self.player_name} ({context.get('role')}) update:\n"

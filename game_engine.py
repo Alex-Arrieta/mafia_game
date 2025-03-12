@@ -43,49 +43,77 @@ class MafiaGameEngine:
         Conduct the day phase: gather messages and votes from players.
         """
         self.day_count += 1
-        self.announce(f"\n--- Day {self.day_count} ---")
+        header = f"\n{'='*40}\nDAY {self.day_count}\n{'='*40}"
+        self.announce(header)
         alive_players = self.get_alive_players()
 
-        # Phase 1: Collect messages.
+        # Phase 1: Collect messages (in randomized order).
         day_messages = {}
-        for name in alive_players:
+        previous_messages = {}  # accumulate messages as they are produced
+        speaking_order = alive_players.copy()
+        random.shuffle(speaking_order)
+        for name in speaking_order:
             player = self.players[name]
+            # The context now includes what has been said so far.
             context = {
                 "alive_players": alive_players,
                 "player_name": name,
                 "role": player.get_role(),
-                "kg": str(player.get_kg())
+                "kg": str(player.get_kg()),
+                "previous_messages": previous_messages.copy()
             }
             action = player.act_day_message(context)
             if action.get("action") == "post_message":
-                message = action.get("message", "")
+                message = action.get("message", "").strip()
                 day_messages[name] = message
-                self.announce(f"{player}: {message}")
+                previous_messages[name] = message
+                # Format the message with a clear prefix.
+                self.announce(f">>> {name} ({player.get_role()}): {message}")
             else:
                 day_messages[name] = "no_message"
+                previous_messages[name] = "[No message]"
+                self.announce(f">>> {name} ({player.get_role()}): [No message]")
 
-        # Phase 2: Collect votes.
+        # Phase 2: Collect votes (also randomized order).
+        self.announce(f"\n{'-'*40}\nVoting Phase\n{'-'*40}")
         votes = {}
-        for name in alive_players:
+        voting_order = alive_players.copy()
+        random.shuffle(voting_order)
+        for name in voting_order:
             player = self.players[name]
             context = {
                 "alive_players": alive_players,
                 "player_name": name,
                 "role": player.get_role(),
                 "kg": str(player.get_kg()),
-                "messages": day_messages
+                "previous_messages": previous_messages.copy()
             }
             action = player.act_day_vote(context)
             votes[name] = action.get("target", "no_vote")
-
-        vote_list = [target for target in votes.values() if target != "no_vote" and target]
+            self.announce(f"*** {name} votes: {votes[name]}")
+        
+        # Tally votes.
+        # Normalize vote targets by stripping extra spaces and trailing commas.
+        vote_list = [target.strip().rstrip(",") for target in votes.values() if target != "no_vote" and target.strip()]
         if vote_list:
             vote_count = Counter(vote_list)
-            target, count = vote_count.most_common(1)[0]
-            self.announce(f"Players voted to eliminate {target} (received {count} vote{'s' if count != 1 else ''}).")
-            self.eliminate_player(target)
+            most_common = vote_count.most_common()
+            max_votes = most_common[0][1]
+            # Find all candidates with the maximum number of votes.
+            candidates = [candidate for candidate, count in most_common if count == max_votes]
+            if len(candidates) > 1:
+                self.announce(
+                    f"\n>>> There is a tie among {', '.join(candidates)} (each received {max_votes} votes). No one is eliminated today."
+                )
+            else:
+                target = candidates[0]
+                self.announce(
+                    f"\n>>> Players voted to eliminate {target} (received {max_votes} vote{'s' if max_votes != 1 else ''})."
+                )
+                self.eliminate_player(target)
         else:
-            self.announce("No votes were cast. No one is eliminated today.")
+            self.announce("\n>>> No votes were cast. No one is eliminated today.")
+
 
     def night_phase(self):
         """
