@@ -68,7 +68,7 @@ class MafiaGameEngine:
                 day_messages[name] = message
                 previous_messages[name] = message
                 # Format the message with a clear prefix.
-                self.announce(f">>> {name} ({player.get_role()}): {message}")
+                self.announce(f">>> {name} ({player.get_role()}): {message}\n")
             else:
                 day_messages[name] = "no_message"
                 previous_messages[name] = "[No message]"
