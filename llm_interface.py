@@ -130,6 +130,7 @@ class LLMInterface:
                 f"Knowledge Graph:\n{context.get('kg')}\n"
                 f"Messages from players:\n{json.dumps(context.get('messages', {}), indent=2)}\n"
                 f"Game context:\n{json.dumps(context, indent=2)}\n"
+                "Do not vote yourself out."
                 "Generate a JSON object with a 'target' key indicating which player to vote out, "
                 "or return {\"target\": \"no_vote\"} if not voting.\n"
                 "Ensure your response is valid json."
